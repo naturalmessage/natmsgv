@@ -1,0 +1,100 @@
+# This file contains install information for UNIX-like operating
+# systems.
+#
+######################################################################
+#                   !!!!!!! WARNING !!!!!
+#                   !!!!!!! WARNING !!!!!
+#                   !!!!!!! WARNING !!!!!
+#                   !!!!!!! WARNING !!!!!
+# IN 2015, THERE ARE THREE VERSION OF LIBGCRYPT, AND IF YOU 
+# FOLLOW YOUR HABITUAL METHOD OF INSTALLING PROGRAMS, YOU MIGHT
+# OVERWRITE AN OLDER VERSION OF LIBGCRYPT AND CAUSE YOUR COMPUTER
+# TO DIE.
+#
+# This will install libgcrypt and libgpg-error to /usr/local
+# to reduce the chance of ruining files that are used during boot
+# (or soon after boot) on some systems.
+#
+echo "These are installation notes. Do not blindly run this as a script."
+exit
+######################################################################
+#
+# 1) You might want a hardware random number generator or something
+#    that helps you to get either high-quality random data or otherwise
+#    helps to feed your entropy source during testing (because generating
+#    keys eats lots of entropy and your system can HANG FOR HOURS if
+#    you do not have a good entropy source).
+#
+#    One option is rngd (in the rng-tools package) and another is haveged.
+#    The haveged program is easier to use.
+#
+#    On Debian:
+#      sudo apt-get install rng-tools
+#      # or
+#      sudo apt-get install haveged
+#
+#    On Red Hat, Fedora, CentOS
+#      sudo yum install rng-tools 
+#      # or 
+#      sudo yum install haveged
+#
+#
+# 2) To be able to verify the GPG stuff, first get the public keys by copying
+#    and pastin the big block of text to a file called gpg.pub on your computer:
+#    https://www.gnupg.org/signature_key.html
+#
+#    now run
+#       gpg --import gpg.pub
+#
+# 3) In the directory where the c programs for this project are stored,
+#   download libgpg and libgpg-error from https://www.gnupg.org/download/index.html
+
+#curl --url ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.17.tar.bz2 libgpg-error-1.17.tar.bz2
+#curl --url ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.17.tar.bz2.sig libgpg-error-1.17.tar.bz2.sig
+
+wget ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.17.tar.bz2 
+wget ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.17.tar.bz2.sig 
+wget ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.6.2.tar.bz2
+wget ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.6.2.tar.bz2.sig
+
+
+# 4) To verify the downloaded files (reqires that you have the public keys
+#    from GPG) as described above.
+gpg --verify libgpg-error-1.17.tar.bz2.sig libgpg-error-1.17.tar.bz2
+gpg --verify libgcrypt-1.6.2.tar.bz2.sig libgcrypt-1.6.2.tar.bz2
+
+# 5) unzip all
+bunzip2 libgpg-error-1.17.tar.bz2
+bunzip2 libgcrypt-1.6.2.tar.bz2
+
+tar -xf libgpg-error-1.17.tar
+tar -xf libgcrypt-1.6.2.tar.bz2
+
+# 6) compile gpg-error first AND BE DOUBLE SURE THAT YOU
+#    USE THE PREFIX OPTION SHOWN HERE OR YOU COULD RUIN
+#    YOUR COMPUTER
+cd libgpg-error-1.17
+./configure --enable-static --disable-shared --prefix=/usr/local
+make
+make install
+
+# 7 ) compile libgcrypt as a static library,
+# and the result will go to libgcrypt-1.6.2/src/.libs/libgcrypt.a
+# This step seemed to work well on Debian 7 but not Fedora 20
+# probably due to conflicting versions of the installed GPG.
+cd ../
+cd libgcrypt-1.6.2
+./configure --enable-static --disable-shared --with-gpg-error-prefix=/usr/local --prefix=/usr/local
+make
+make install
+# 8) Compile my c programs
+cd ../
+make nm_verify
+# The natmsg command line client will expect
+# the nm_verify program to be in /usr/local/bin, but
+# if you are experimenting, you can put them in any
+# directory as long as you know where they are.
+# The natmsg command line clients needs only the nm_verify
+# program, but the others are there for validation
+# purposes. 
+make install
