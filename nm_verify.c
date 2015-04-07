@@ -9,18 +9,20 @@
 //
 //
 //
-//#include <gcrypt.h>
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <assert.h>
-//#include <time.h>
-//#include <ctype.h>
 //
-// Local header:
+// Local header file:
+#include <stddef.h>
+#include <gcrypt.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// nm_keys requires some of the things above
 #include "nm_keys.h"
+
 #include <getopt.h>
-#define MAX_ENTRY_LEN 500
+#define MAX_ENTRY_LEN 300
 #define MAX_KEY_BUFF 3000
 #define MAX_CMDLINE_BUFF 500
 #define debug_lvl 0
@@ -42,12 +44,7 @@ int main (int argc, char *argv[]) {
 	gcry_error_t err;
 	size_t err_offset;
 
-	char *input_fname        = gcry_malloc_secure(MAX_CMDLINE_BUFF);
-	char *input_sig_fname    = gcry_malloc_secure(MAX_CMDLINE_BUFF);
-	char *input_pub_key_fname= gcry_malloc_secure(MAX_CMDLINE_BUFF);
-	//char *input_data_txt     = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *input_sig_txt      = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *nm_key_txt         = gcry_malloc_secure(MAX_KEY_BUFF);
+
 	gcry_sexp_t sexp_nm_key; //, sexp_nm_offline_key, sexp_offline_pub_key;
 	gcry_sexp_t sexp_pub_key;
 	gcry_sexp_t sexp_input_data;
@@ -56,6 +53,86 @@ int main (int argc, char *argv[]) {
 	int err_int;
 
 	FILE *fp;
+
+
+	/*
+	----------------------------------------------------------------------
+													LIBGCRYPT INITIALIZATION
+                (mostly from libgcrypt 1.6.2 manual p. 5-6)
+	----------------------------------------------------------------------
+	*/
+	/* 
+		 Version check should be the very first call because it
+		 makes sure that important subsystems are initialized.
+	*/
+	if (!gcry_check_version (GCRYPT_VERSION))
+	{
+		fputs ("libgcrypt version mismatch\n", stderr);
+		exit (2);
+	}
+
+	/*
+		We don’t want to see any warnings, e.g. because we have not yet
+		parsed program options which might be used to suppress such
+		warnings. 
+	*/
+	gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+	/*
+	 .. If required, other initialization goes here. Note that the
+	 process might still be running with increased privileges and that
+	 the secure memory has not been initialized. 
+	*/
+
+	//put random nbrs in secmem
+  gcry_control (GCRYCTL_USE_SECURE_RNDPOOL); //run immediately after check_ver
+	/*
+		Allocate a pool of 16k secure memory. This make the secure memory
+		available and also drops privileges where needed. 
+	*/
+  gcry_control (GCRYCTL_SET_VERBOSITY, 0);
+	printf("running secmem now...\n");
+	gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
+	printf("finished running secmem ...\n");
+	/* 
+		It is now okay to let Libgcrypt complain when there was/is
+		a problem with the secure memory. 
+	*/
+	gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
+	/* 
+	 ... If required, other initialization goes here.
+	*/
+	gcry_control (GCRYCTL_DUMP_SECMEM_STATS); //show secmem info for debugging
+
+	/* Tell Libgcrypt that initialization has completed. */
+	gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+
+	/*
+	----------------------------------------------------------------------
+													END LIBGCRYPT INITIALIZATION
+	----------------------------------------------------------------------
+	*/
+
+	// Double check that the initialization is done.
+	if (!gcry_control (GCRYCTL_INITIALIZATION_FINISHED_P))
+	{
+		fputs ("libgcrypt has not been initialized\n", stderr);
+		abort ();
+	}
+
+
+	/*
+		"To use a cipher algorithm, you must first allocate an
+		according handle. This is to be done using the open 
+		function:" (libgcrypt manual 1.6, p. 29).
+		gcry_error_t gcry_cipher_open
+	*/
+
+	char *input_fname        = gcry_malloc_secure(MAX_CMDLINE_BUFF);
+	char *input_sig_fname    = gcry_malloc_secure(MAX_CMDLINE_BUFF);
+	char *input_pub_key_fname= gcry_malloc_secure(MAX_CMDLINE_BUFF);
+	char *input_sig_txt      = gcry_malloc_secure(MAX_KEY_BUFF);
+	char *nm_key_txt         = gcry_malloc_secure(MAX_KEY_BUFF);
+
 
 	/*
 	----------------------------------------------------------------------
@@ -150,6 +227,7 @@ int main (int argc, char *argv[]) {
 
 
 	if (input_fname[0] == 0x00){
+		printf("input filename is missing code 9\n");
 		fprintf (stderr, "Error. Input filename is missing.\n");
 		usage();
 		return 321;
@@ -167,76 +245,6 @@ int main (int argc, char *argv[]) {
 		return 327;
 	}
 
-	/*
-	----------------------------------------------------------------------
-													LIBGCRYPT INITIALIZATION
-                (mostly from libgcrypt 1.6.2 manual p. 5-6)
-	----------------------------------------------------------------------
-	*/
-	/* 
-		 Version check should be the very first call because it
-		 makes sure that important subsystems are initialized.
-	*/
-	if (!gcry_check_version (GCRYPT_VERSION))
-	{
-		fputs ("libgcrypt version mismatch\n", stderr);
-		exit (2);
-	}
-
-	/*
-		We don’t want to see any warnings, e.g. because we have not yet
-		parsed program options which might be used to suppress such
-		warnings. 
-	*/
-	gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-	/*
-	 .. If required, other initialization goes here. Note that the
-	 process might still be running with increased privileges and that
-	 the secure memory has not been initialized. 
-	*/
-
-	//put random nbrs in secmem
-  gcry_control (GCRYCTL_USE_SECURE_RNDPOOL); //run immediately after check_ver
-	/*
-		Allocate a pool of 16k secure memory. This make the secure memory
-		available and also drops privileges where needed. 
-	*/
-  gcry_control (GCRYCTL_SET_VERBOSITY, 0);
-	printf("running secmem now...\n");
-	gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
-	printf("finished running secmem ...\n");
-	/* 
-		It is now okay to let Libgcrypt complain when there was/is
-		a problem with the secure memory. 
-	*/
-	gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
-	/* 
-	 ... If required, other initialization goes here.
-	*/
-
-	/* Tell Libgcrypt that initialization has completed. */
-	gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
-
-	/*
-	----------------------------------------------------------------------
-													END LIBGCRYPT INITIALIZATION
-	----------------------------------------------------------------------
-	*/
-
-	// Double check that the initialization is done.
-	if (!gcry_control (GCRYCTL_INITIALIZATION_FINISHED_P))
-	{
-		fputs ("libgcrypt has not been initialized\n", stderr);
-		abort ();
-	}
-
-
-	/*
-		"To use a cipher algorithm, you must first allocate an
-		according handle. This is to be done using the open 
-		function:" (libgcrypt manual 1.6, p. 29).
-		gcry_error_t gcry_cipher_open
-	*/
 
 	/*
 	*/
@@ -371,6 +379,9 @@ int main (int argc, char *argv[]) {
 	//------------------------------------------------------------
 	//------------------------------------------------------------
 	//------------------------------------------------------------
+
+	gcry_control (GCRYCTL_DUMP_SECMEM_STATS); //show secmem info for debugging
+
 	gcry_sexp_release(sexp_nm_key); //, sexp_nm_offline_key, sexp_offline_pub_key;
 	gcry_sexp_release(sexp_pub_key);
 	gcry_sexp_release(sexp_input_data);

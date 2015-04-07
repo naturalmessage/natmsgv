@@ -46,6 +46,14 @@
 //   http://people.csail.mit.edu/rivest/Sexp.txt
 //
 // local header file:
+
+#include <stddef.h>
+#include <gcrypt.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
 #include "nm_keys.h"
 
 #include <time.h>
@@ -289,12 +297,6 @@ int main (int argc, char **argv) {
 	static const char buff_online_enc_sexp[] = "(genkey (rsa (nbits 4:2048)))";
 	static const char buff_online_sign_sexp[] =  "(genkey (ecc (curve \"Ed25519\")))";
 	static const char buff_offline_sign_sexp[] = "(genkey (ecc (curve \"Ed25519\")))";
-	char *buff_online_enc_pub_sexp_result  = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *buff_online_enc_prv_sexp_result  = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *buff_online_sign_pub_sexp_result = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *buff_online_sign_prv_sexp_result = gcry_malloc_secure(MAX_KEY_BUFF);
-	char *buff_offline_sign_pub_sexp_result= gcry_malloc_secure(MAX_KEY_BUFF);
-	char *buff_offline_sign_prv_sexp_result= gcry_malloc_secure(MAX_KEY_BUFF);
 	int j;
 
 	time_t t;
@@ -349,6 +351,9 @@ int main (int argc, char **argv) {
 		a problem with the secure memory. 
 	*/
 	gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
+
+	gcry_control (GCRYCTL_DUMP_SECMEM_STATS); //compensate for the bogus 'insecure memory' warning by showing stats
+
 	/* 
 	 ... If required, other initialization goes here.
 	*/
@@ -369,6 +374,13 @@ int main (int argc, char **argv) {
 		abort ();
 	}
 
+
+	char *buff_online_enc_pub_sexp_result  = gcry_malloc_secure(MAX_KEY_BUFF);
+	char *buff_online_enc_prv_sexp_result  = gcry_malloc_secure(MAX_KEY_BUFF);
+	char *buff_online_sign_pub_sexp_result = gcry_malloc_secure(MAX_KEY_BUFF);
+	char *buff_online_sign_prv_sexp_result = gcry_malloc_secure(MAX_KEY_BUFF);
+	char *buff_offline_sign_pub_sexp_result= gcry_malloc_secure(MAX_KEY_BUFF);
+	char *buff_offline_sign_prv_sexp_result= gcry_malloc_secure(MAX_KEY_BUFF);
 
 	/*
 		"To use a cipher algorithm, you must first allocate an
@@ -621,6 +633,7 @@ int main (int argc, char **argv) {
 	//------------------------------------------------------------
 	//------------------------------------------------------------
 	//
+	gcry_control (GCRYCTL_DUMP_SECMEM_STATS); //compensate for the bogus 'insecure memory' warning by showing stats
 	
 	gcry_sexp_release(sexp_online_enc_key);
 	gcry_sexp_release(sexp_offline_sign_key);

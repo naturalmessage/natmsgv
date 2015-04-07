@@ -47,8 +47,15 @@
 // Compile this using the 'make' command execute from this directory.
 //
 // local file nm_keys.h
-#include "nm_keys.h"
 
+#include <stddef.h>
+#include <gcrypt.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+//
+#include "nm_keys.h"
 
 char *get_line (char *str_ptr, size_t n, FILE *f)
 {

@@ -1,11 +1,12 @@
 // nm_keys.h
-#include <gcrypt.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-//#include <assert.h>
-//#include <time.h>
-#include <ctype.h>
+//
+//#include "gcrypt.h"
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <string.h>
+//  //#include <assert.h>
+//  //#include <time.h>
+//#include <ctype.h>
 
 
 //#define MAX_ENTRY_LEN 500

@@ -1,0 +1,83 @@
+# This should be copied to a file called Makefile
+# for FreeBSD.  This version of the Makefile uses a shared
+# library file that should be compiled use the port (source)
+# as opposed to the manual source download from the gnupg web site:
+# /usr/ports/security/libgcrypt.
+
+# The command here use libgcrypt-config, which should be installed
+# when the port is installed, an alternative is to point directly
+# to the location of gcrypt.h and the libraries:
+#    ...  -I/usr/local/include -L/usr/local/lib  ...
+#
+# Misc notes:
+# In the gcc man page, the "overall options" include "-c" for
+# compiling but not linking.
+#
+# check linker dependencies with:
+#   ldd nm_verify
+#
+#
+# WARNING: THIS HAVE THE FILE_OFFSET_BITS OF 64 for libgcrypt
+# ... NOT SURE IF THAT RUINS 32 BIT COMPILE
+#
+# Environment variables are probably not necessary:
+# in tcsh: setenv C_INCLUDE_PATH /usr/local/include 
+# in bash: export C_INCLUDE_PATH=/usr/local/include 
+# LD_LIBRARY_PATH=/usr/local/lib
+
+all : nm_create_server_keys nm_sign shatest nm_verify
+
+shatest : shatest.c
+	gcc  -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+		`libgcrypt-config --libs --cflags` -lgcrypt -lgpg-error \
+		-o shatest shatest.c 
+
+#	gcc   -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+#		-I/usr/local/include -lgcrypt -lgpg-error \
+#		-o nm_verify nm_keys.o nm_verify.c
+
+nm_verify : nm_verify.c nm_keys.o nm_keys.c
+	gcc   -Wall -g -O0   -D_FILE_OFFSET_BITS=64  \
+		`libgcrypt-config --libs --cflags` \
+	 	-lgcrypt -lgpg-error -o nm_verify nm_keys.o nm_verify.c
+
+
+nm_sign : nm_sign.c nm_keys.o nm_keys.c
+	gcc  -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+		`libgcrypt-config --libs --cflags` -lgcrypt -lgpg-error \
+		-o nm_sign nm_keys.o nm_sign.c 
+
+
+nm_create_server_keys : nm_create_server_keys_main.o nm_keys.o
+	gcc  -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+		`libgcrypt-config --libs --cflags` -lgcrypt -lgpg-error \
+		-o nm_create_server_keys nm_create_server_keys_main.o nm_keys.o 
+
+#	gcc   -c -o nm_keys.o -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+#		-I/usr/local/include -L/usr/local/lib  \
+#		-lgcrypt -lgpg-error  nm_keys.c 
+nm_keys.o : nm_keys.h nm_keys.c
+	gcc   -c -o nm_keys.o -Wall -g -O0  -D_FILE_OFFSET_BITS=64  \
+		`libgcrypt-config --libs --cflags` \
+		-lgcrypt -lgpg-error  nm_keys.c 
+
+nm_create_online_key : nm_create_online_key.c nm_keys.o nm_keys.c
+	gcc  -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+	`libgcrypt-config --libs --cflags` -lgcrypt -lgpg-error \
+	-o nm_create_online_key nm_keys.o nm_create_online_key.c 
+
+nm_create_server_keys_main.o : nm_create_server_keys.c nm_keys.o nm_keys.c
+	gcc  -c -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
+		`libgcrypt-config --libs --cflags` -lgcrypt -lgpg-error \
+		-o nm_create_server_keys_main.o nm_create_server_keys.c 
+
+install:
+	# For the client, only the nm_verify needs to be installed,
+	# the other programs are for veririfcation
+	if [ ! -d /usr/local/bin ]; then
+		mkdir -p /usr/local/bin
+		chmod 755 /usr/local/bin
+	fi
+	cp nm_verify /usr/local/bin
+	chown root /usr/local/bin/nm_verify
+	chmod 555 /usr/local/bin/nm_verify
