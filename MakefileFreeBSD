@@ -74,10 +74,10 @@ nm_create_server_keys_main.o : nm_create_server_keys.c nm_keys.o nm_keys.c
 install:
 	# For the client, only the nm_verify needs to be installed,
 	# the other programs are for veririfcation
-	if [ ! -d /usr/local/bin ]; then
-		mkdir -p /usr/local/bin
-		chmod 755 /usr/local/bin
-	fi
+	#if [ ! -d /usr/local/bin ]; then
+	#	mkdir -p /usr/local/bin
+	#	chmod 755 /usr/local/bin
+	#fi
 	cp nm_verify /usr/local/bin
-	chown root /usr/local/bin/nm_verify
+	chown root:root /usr/local/bin/nm_verify
 	chmod 555 /usr/local/bin/nm_verify
