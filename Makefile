@@ -41,6 +41,4 @@ install:
 	#	mkdir -p /usr/local/bin
 	#	chmod 755 /usr/local/bin
 	#fi
-	cp nm_verify /usr/local/bin
-	chown root:root /usr/local/bin/nm_verify
-	chmod 555 /usr/local/bin/nm_verify
+	install -b nm_verify
