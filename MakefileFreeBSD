@@ -74,5 +74,5 @@ nm_create_server_keys_main.o : nm_create_server_keys.c nm_keys.o nm_keys.c
 install:
 	# For the client, only the nm_verify needs to be installed,
 	# the other programs are for veririfcation
-	install -b nm_verify
+	install -b nm_verify /usr/local/bin
 
