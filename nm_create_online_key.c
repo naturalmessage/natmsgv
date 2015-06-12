@@ -474,7 +474,7 @@ int main (int argc, char **argv) {
 			// or EOL. The routine will strip trailing whitespace.
 			get_line(entry_stuff.expiration_YYYYMMDD, 10, stdin);
 		
-			if(strlen(entry_stuff.expiration_YYYYMMDD) == 8){
+			if(strlen(entry_stuff.expiration_YYYYMMDD) == 9){
 				// Length is good.  The input routine will kill trailing chars.
 				for(j=0;j<strlen(entry_stuff.expiration_YYYYMMDD); j++){
 					if (!isdigit(entry_stuff.expiration_YYYYMMDD[j])){
@@ -489,7 +489,7 @@ int main (int argc, char **argv) {
 				printf("\n"); //start on a new line for the next attempt
 			}
 		}
-		strncpy(save_YYYYMMDD, entry_stuff.expiration_YYYYMMDD, 8);
+		strncpy(save_YYYYMMDD, entry_stuff.expiration_YYYYMMDD, 9);
 	}
 		
 	if(strlen(entry_stuff.IPV4) == 0){
@@ -535,7 +535,7 @@ int main (int argc, char **argv) {
 	strncat(entry_stuff.name_real, " ONLINE ENCRYPTION KEY", 
 		MAX_ENTRY_LEN - strlen(entry_stuff.name_real));
 	// restore the expire date for the online key
-	strncpy(entry_stuff.expiration_YYYYMMDD, save_YYYYMMDD,  8);
+	strncpy(entry_stuff.expiration_YYYYMMDD, save_YYYYMMDD,  9);
 
   rslt = natmsg_gen_key(buff_online_enc_sexp, 
 		&entry_stuff,

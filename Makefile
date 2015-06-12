@@ -1,7 +1,7 @@
 # In the gcc man page, the "overall options" include "-c" for
 # compiling but not linking.
 #
-all : nm_create_server_keys nm_sign shatest nm_verify
+all : nm_create_server_keys nm_sign shatest nm_verify nm_create_online_key
 
 shatest : shatest.c
 	gcc  -Wall -g -O0 -D_FILE_OFFSET_BITS=64 \
