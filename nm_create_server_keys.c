@@ -431,7 +431,7 @@ int main (int argc, char **argv) {
 		// or EOL. The routine will strip trailing whitespace.
 		get_line(entry_stuff.expiration_YYYYMMDD, 10, stdin);
 	
-		if(strlen(entry_stuff.expiration_YYYYMMDD) == 9){
+		if(strlen(entry_stuff.expiration_YYYYMMDD) == 8){
 			// Length is good.  The input routine will kill trailing chars.
 			for(j=0;j<strlen(entry_stuff.expiration_YYYYMMDD); j++){
 				if (!isdigit(entry_stuff.expiration_YYYYMMDD[j])){

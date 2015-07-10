@@ -29,7 +29,7 @@
 	* A list object is delmited with ()?
 	* Dates can be entered like this:
 	    (not-before "1997-01-01_09:00:00").
-	* Regular text and numbers can be entere like this:
+	* Regular text and numbers can be entered like this:
 	    (account "12345678") (* numeric range "1" "1000")
 	* The 'transport' example on the mit link looks like base64 inside {}
 	  See base64PrintWholeObject() in input.c on the MIT site for base64 object.

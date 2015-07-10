@@ -45,6 +45,18 @@
 // READ THIS FILE ABOUT S-EXPRESSIONS (DONT' CUT CORNERS): 
 //   http://people.csail.mit.edu/rivest/Sexp.txt
 //
+
+//july 10
+#include <stddef.h>
+#include <gcrypt.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+
+
+
 // local header file:
 #include "nm_keys.h"
 
@@ -474,7 +486,7 @@ int main (int argc, char **argv) {
 			// or EOL. The routine will strip trailing whitespace.
 			get_line(entry_stuff.expiration_YYYYMMDD, 10, stdin);
 		
-			if(strlen(entry_stuff.expiration_YYYYMMDD) == 9){
+			if(strlen(entry_stuff.expiration_YYYYMMDD) == 8){
 				// Length is good.  The input routine will kill trailing chars.
 				for(j=0;j<strlen(entry_stuff.expiration_YYYYMMDD); j++){
 					if (!isdigit(entry_stuff.expiration_YYYYMMDD[j])){
@@ -489,8 +501,8 @@ int main (int argc, char **argv) {
 				printf("\n"); //start on a new line for the next attempt
 			}
 		}
-		strncpy(save_YYYYMMDD, entry_stuff.expiration_YYYYMMDD, 9);
 	}
+	strncpy(save_YYYYMMDD, entry_stuff.expiration_YYYYMMDD, 9);
 		
 	if(strlen(entry_stuff.IPV4) == 0){
 		printf("Enter the IPv4 for the web site: ");
